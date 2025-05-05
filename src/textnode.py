@@ -10,6 +10,14 @@ class TextType(Enum):
     LINK = "link"
     IMAGE = "image"
 
+class BlockType(Enum):
+    PARAGRAPH = "paragraph"
+    HEADING = "heading"
+    CODE = "code"
+    QUOTE = "quote"
+    UNORDERED_LIST = "unordered list"
+    ORDERED_LIST = "ordered_list"
+
 class TextNode():
     def __init__(self, text, text_type, url=None):
         self.text = text
@@ -46,7 +54,10 @@ def text_node_to_html_node(text_node):
 
 def split_nodes_delimiter(old_nodes, delimiter, text_type):
     new_nodes = []
+    if not isinstance(old_nodes,list):
+        old_nodes = [old_nodes]
     for node in old_nodes:
+        #print(node)
         if node.text_type != TextType.TEXT:
             new_nodes.append(node)
         else:
@@ -79,17 +90,21 @@ def split_nodes_image(old_nodes):
     new_nodes = []
     #print(f"{old_nodes}")
     for node in old_nodes:
-        #print(f"{node}")
-        images = extract_markdown_images(node.text)
-        original_text = node.text
-        for image in images:
-            sections = original_text.split(f"![{image [0]}]({image[1]})", 1)
-            if sections[0] != "":
-                new_nodes.append(TextNode(sections[0], TextType.TEXT))
-            new_nodes.append(TextNode(image[0],TextType.IMAGE,image[1]))
-            original_text = sections[1]
-        if original_text != "":
-            new_nodes.append(TextNode(original_text, TextType.TEXT))
+        if node.text_type == TextType.TEXT:
+            #print(f"{node}")
+            images = extract_markdown_images(node.text)
+            original_text = node.text
+            for image in images:
+                sections = original_text.split(f"![{image [0]}]({image[1]})", 1)
+                if sections[0] != "":
+                    new_nodes.append(TextNode(sections[0], TextType.TEXT))
+                new_nodes.append(TextNode(image[0],TextType.IMAGE,image[1]))
+                original_text = sections[1]
+            if original_text != "":
+                new_nodes.append(TextNode(original_text, TextType.TEXT))
+        else:
+            new_nodes.append(node)
+
 
     #print(new_nodes)
     return new_nodes
@@ -98,26 +113,81 @@ def split_nodes_link(old_nodes):
     links = []
     new_nodes = []
     for node in old_nodes:
-        links = extract_markdown_links(node.text)
-        #print(links)
-        original_text = node.text
-        for link in links:
-            sections = original_text.split(f"[{link[0]}]({link[1]})", 1)
-            if sections[0] != "":
-                new_nodes.append(TextNode(sections[0], TextType.TEXT))
-            new_nodes.append(TextNode(link[0],TextType.LINK,link[1]))
-            original_text = sections[1]
-        if original_text != "":
-            new_nodes.append(TextNode(original_text, TextType.TEXT))
+        if node.text_type == TextType.TEXT:
+            links = extract_markdown_links(node.text)
+            #print(links)
+            original_text = node.text
+            for link in links:
+                sections = original_text.split(f"[{link[0]}]({link[1]})", 1)
+                if sections[0] != "":
+                    new_nodes.append(TextNode(sections[0], TextType.TEXT))
+                new_nodes.append(TextNode(link[0],TextType.LINK,link[1]))
+                original_text = sections[1]
+            if original_text != "":
+                new_nodes.append(TextNode(original_text, TextType.TEXT))
+        else:
+            new_nodes.append(node)
 
     #print(new_nodes)
     return new_nodes
 
 def text_to_textnodes(text):
     nodes = TextNode(text, TextType.TEXT)
-    nodes = split_nodes_delimiter(nodes, "b", TextType.BOLD)
-    nodes = split_nodes_delimiter(nodes, "i", TextType.ITALIC)
+    nodes = split_nodes_delimiter(nodes, "**", TextType.BOLD)
+    nodes = split_nodes_delimiter(nodes, "_", TextType.ITALIC)
     nodes = split_nodes_delimiter(nodes, "`", TextType.CODE)
     nodes = split_nodes_image(nodes)
     nodes = split_nodes_link(nodes)
     return nodes
+
+def markdown_to_blocks(markdown):
+    block_list = []
+    blocks = markdown.split("\n\n")
+    for block in blocks:
+        block = block.strip()
+        if not block.isspace() and block != "":
+            block_list.append(block)
+    #print(block_list)
+    return block_list
+
+def block_to_block_type(block):
+    if re.match(r"(^#{1,6} )", block) != None:
+        return BlockType.HEADING
+    if re.match(r"(^`{3}).*(`{3}$)", block) != None:
+        return BlockType.CODE
+    quote = False
+    lines = block.splitlines()
+    for line in lines:
+        if line.startswith(">"):
+            quote = True
+        else:
+            quote = False
+            break
+    if quote == True:
+        return BlockType.QUOTE
+    
+    unordered_list = False
+    lines = block.splitlines()
+    for line in lines:
+        if line.startswith("- "):
+            unordered_list = True
+        else:
+            unordered_list = False
+            break
+    if unordered_list == True:
+        return BlockType.UNORDERED_LIST
+    
+    ordered_list = False
+    lines = block.splitlines()
+    for i in range(len(lines)):
+        if lines[i].startswith(f"{i+1}. "):
+            ordered_list = True
+        else:
+            ordered_list = False
+            break
+    if ordered_list == True:
+        return BlockType.ORDERED_LIST
+    
+    return BlockType.PARAGRAPH
+    
+   
