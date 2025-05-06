@@ -58,6 +58,7 @@ def text_to_children(text, block_type=None):
             node.text = node.text.lstrip("#")
             node.text = node.text.lstrip()
         if block_type == BlockType.QUOTE:
+            node.text = node.text.replace("> ", "")
             node.text = node.text.replace(">", "")
         if block_type == BlockType.PARAGRAPH or block_type is None:
             node.text = node.text.replace("\n", " ")
@@ -105,3 +106,11 @@ def heading_level(text):
         return "h1"
     else:
         return None
+    
+def extract_title(markdown):
+    lines = markdown.splitlines()
+    for line in lines:
+        if line.startswith("# "):
+            line = line.lstrip("# ")
+            return line
+    raise Exception("Invalid markdown: No title")

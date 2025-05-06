@@ -28,9 +28,9 @@ This is another paragraph with _italic_ text and `code` here
         md = """
 # Quotes
 
->This is a quote
->With some **bolded** sections
->and _italicized_ text
+> This is a quote
+> With some **bolded** sections
+> and _italicized_ text
 
 And also a normal paragraph.
 """
@@ -130,8 +130,33 @@ Here is a [link](https://www.google.com) to google.
 """
         node = markdown_to_html_node(md)
         html = node.to_html()
-        print(html)
+        #print(html)
         self.assertEqual(
             html,
             '<div><h3>Heading 3</h3><p>A story begins with some background</p><h4>Stuff to collect</h4><ul><li>Mushrooms</li><li>Berries</li><li>Twigs</li></ul><p>And get enough of everything.</p><h4>Missions</h4><ol><li>Collect stuff</li><li>Kill the Dragon</li><li>Rejoice!</li></ol><p>And do not forget to write some code</p><pre><code>print("Hello World!")\n</code></pre><p>Here is a <a href="https://www.google.com">link</a> to google.</p></div>',
         )
+
+
+class TestExtractTitle(unittest.TestCase):
+
+    def test_title_found(self):
+        md = """
+
+
+# Title
+
+Some paragraphs
+"""
+        title = extract_title(md)
+        self.assertEqual(title, "Title")
+
+
+    def test_title_not_found(self):
+        md = """
+
+
+- Title
+
+Some paragraphs
+"""
+        self.assertRaises(Exception, extract_title, md)
