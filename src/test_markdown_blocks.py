@@ -62,7 +62,7 @@ class TestBlockToBlockType(unittest.TestCase):
         self.assertEqual(block_type, BlockType.HEADING)
 
     def test_block_to_block_type_code(self):
-        block = "``` CODE BLOCK     ```"
+        block = "```\nThis is code\n```"
         block_type = block_to_block_type(block)
         self.assertEqual(block_type, BlockType.CODE)
 

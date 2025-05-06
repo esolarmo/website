@@ -23,10 +23,10 @@ def markdown_to_blocks(markdown):
 def block_to_block_type(block):
     if re.match(r"(^#{1,6} )", block) != None:
         return BlockType.HEADING
-    if re.match(r"(^`{3}).*(`{3}$)", block) != None:
+    lines = block.splitlines()
+    if len(lines) > 1 and lines[0].startswith("```") and lines[-1].startswith("```"):
         return BlockType.CODE
     quote = False
-    lines = block.splitlines()
     for line in lines:
         if line.startswith(">"):
             quote = True

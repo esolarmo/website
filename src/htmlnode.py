@@ -28,7 +28,7 @@ class LeafNode(HTMLNode):
     
     def to_html(self):
         if self.value == None:
-            raise ValueError
+            raise ValueError("invalid HTML: no value")
         if self.tag == None:
             return self.value
         return f"<{self.tag}{self.props_to_html()}>{self.value}</{self.tag}>"
@@ -43,17 +43,16 @@ class ParentNode(HTMLNode):
 
     def to_html(self):
         if self.tag is None:
-            raise ValueError("no tag!")
+            raise ValueError("Invalid HTML: no tag")
         if self.children is None:
-            raise ValueError("no children!")
-        return_string = f"<{self.tag}>"
-        for child in self.children:
-            return_string += child.to_html()
-        return_string += f"</{self.tag}>"
-        return return_string
+            raise ValueError("Invalid HTML: no children")
+        children_html = ""
+        if isinstance(self.children, list):
+            for child in self.children:
+                children_html += child.to_html()
+        else:
+            children_html = self.children.to_html()
+        return f"<{self.tag}{self.props_to_html()}>{children_html}</{self.tag}>"
     
     def __repr__(self):
-        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"    
-
-def markdown_to_html_node(markdown):
-    pass
+        return f"ParentNode({self.tag}, children: {self.children}, {self.props})"
