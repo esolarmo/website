@@ -4,6 +4,7 @@ from markdown_html import *
 import re
 import shutil
 import os
+import sys
 
 dir_path_static = "./static"
 dir_path_public = "./docs"
@@ -11,13 +12,12 @@ dir_path_content = "./content"
 template_path = "./template.html"
 basepath = "/"
 
-def main(*argv):
+def main(argv):
     global basepath
 
-    if len(argv) > 0:
-        basepath = argv[0]
-
-
+    if len(argv) > 1:
+        basepath = argv[1]
+    
     if os.path.exists(dir_path_public):
         shutil.rmtree(dir_path_public)
 
@@ -105,4 +105,4 @@ def is_markdown(file):
 
 
 
-main()
+main(sys.argv)
