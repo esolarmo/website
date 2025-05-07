@@ -82,7 +82,7 @@ def generate_page_recursive(source, template_path):
         #print(os.path.join(source, object))
         if is_markdown(os.path.join(source, object)):
             from_path = os.path.join(source, object)
-            dest_path = from_path.replace("content", "public")
+            dest_path = from_path.replace("content", "docs")
             dest_path = dest_path.replace("md", "html")
             generate_page(from_path, template_path, dest_path, basepath)
         elif os.path.isdir(os.path.join(source, object)):
